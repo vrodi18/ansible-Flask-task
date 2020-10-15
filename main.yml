@@ -1,0 +1,47 @@
+- hosts: web_flask
+  tasks:
+  - name: Install Git and python3
+    yum: 
+      name:
+       - git
+       - python3
+  
+  - name: upgrade all packages
+    yum: name=* state=latest
+
+  - name: Install Apache
+    include_tasks: apache.yml
+
+  - name: Download pip installation file and setup
+    shell: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+    args: 
+      creates: get-pip.py
+
+  - name: Install pip
+    command: python get-pip.py
+
+  - name: install the package, force upgrade
+    pip: 
+      name: setuptools
+      state: latest
+
+  - name: Clone a repo with separate git directory
+    git:
+      repo: https://github.com/anfederico/Flaskex 
+      dest: /home/centos/Flaskex
+      separate_git_dir: /home/centos/ansible-examples.git
+  
+  - name: CD to Flaskex
+    command: pip install -r requirements.txt  chdir=/home/centos/Flaskex
+
+  - name: move to /html
+    shell: rsync -r /home/centos/Flaskex/*  /var/www/html
+
+  - name: run my script!
+    command: python app.py chdir=/var/www/html
+
+  
+      
+  
+
+    
